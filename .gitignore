@@ -17,6 +17,10 @@
 /.next/
 /out/
 
+# gemini disk cache + local test samples (may contain real student data)
+/.cache/
+/samples/
+
 # production
 /build
 
