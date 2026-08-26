@@ -4,8 +4,8 @@ A teacher uploads a question paper and one student's handwritten answer sheet (P
 
 ## Live demo
 
-- Deployed URL: _fill in after deploy_
-- GitHub: _fill in_
+- Deployed URL: https://answer-sheet-mapper.vercel.app
+- GitHub: https://github.com/priyalrathore003/answer-sheet-mapper
 
 ## Approach
 
@@ -43,3 +43,4 @@ Every Gemini call is cached to disk (`src/lib/gemini.ts`), keyed on a hash of th
 - **Label matching is normalization-based**, not fuzzy/semantic — it handles punctuation and spacing variants (`"11(a)"` vs `"11 a"` vs `"Q11a"`) but not, e.g., a student writing out "eleven a" in words.
 - **Vercel request body limits** — file uploads go through a single serverless function call; very large multi-page scans could approach Vercel's request body ceiling. Typical single-student answer sheets (tested up to ~700KB/2 pages) are well within range.
 - **No auth, no database** — per the brief; all state is in-memory for the duration of one request/response cycle.
+- **Gemini free-tier rate limit (confirmed live, not theoretical)** — `gemini-3.6-flash`'s free tier caps out at 20 requests/minute per API key, shared across every caller using that key (local dev, this deployment, anyone testing it). One document pair typically needs 4-6 calls (one per page extracted, plus one for grading), so a single upload comfortably fits — but back-to-back test runs in a short window can hit `RESOURCE_EXHAUSTED`. The app surfaces this as a clean error via the progress stream rather than crashing; waiting under a minute and retrying resolves it. This was hit and observed directly while smoke-testing the live deployment.
