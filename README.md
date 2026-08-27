@@ -1,6 +1,8 @@
 # Answer Sheet Mapper
 
-A teacher uploads a question paper and one student's handwritten answer sheet (PDF or images). The app extracts every question and every handwritten answer, maps answers to questions, and — when a question is clicked — highlights the exact region of the answer sheet where that answer was written. Optional AI grading (correct/incorrect + short feedback) can be toggled on before processing.
+A teacher uploads a question paper and one student's handwritten answer sheet (PDF or images). The app extracts every question and every handwritten answer, maps answers to questions, and — when a question is clicked — highlights the exact region of the answer sheet where that answer was written. Optional AI grading (per-question score, verdict, and short feedback, plus a summary) can be toggled on before processing.
+
+For module boundaries, data flow, and the two algorithms that carry the actual logic (label matching, and the row-based fix for answers split across a table), see **[LLD.md](./LLD.md)**.
 
 ## Live demo
 
