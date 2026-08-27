@@ -2,15 +2,17 @@ import type { AnswerRegion, MappedQuestion, MappingResult, Question } from "./ty
 
 /**
  * Collapse different ways of writing the same label down to one comparable
- * key: "11(a)", "11 a", "11a)" and "Q11a" all become "11a". This is what
- * lets matching survive a student's slightly different notation from the
- * question paper's.
+ * key: "11(a)", "11 a", "11a)", "Q11a", and "Ans. 11(a)" all become "11a".
+ * This is what lets matching survive a student's slightly different
+ * notation from the question paper's — including students who label their
+ * answers by what they're answering ("Ans", "Answer", "Sol") rather than
+ * echoing the question's own numbering style.
  */
 export function normalizeLabel(raw: string): string {
   return raw
     .trim()
     .toLowerCase()
-    .replace(/^q\.?\s*/, "")
+    .replace(/^(answer|ans|solution|sol|question|q)s?\.?:?\s*/, "")
     .replace(/[^a-z0-9]/g, "");
 }
 
