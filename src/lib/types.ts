@@ -31,6 +31,8 @@ export type GradeVerdict = "correct" | "partially_correct" | "incorrect" | "ungr
 export interface GradingResult {
   questionId: string;
   verdict: GradeVerdict;
+  maxMarks: number;
+  marksAwarded: number;
   feedback: string;
 }
 

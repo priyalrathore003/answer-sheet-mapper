@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { ProcessResult } from "@/lib/types";
 import { QuestionList, type Selection } from "./QuestionList";
 import { AnswerSheetViewer } from "./AnswerSheetViewer";
+import { GradingSummary } from "./GradingSummary";
 
 interface Props {
   result: ProcessResult;
@@ -42,6 +43,7 @@ export function ResultsView({ result, onReset }: Props) {
           Start over
         </button>
       </div>
+      <GradingSummary mapped={result.mapping.mapped} grading={result.grading} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <QuestionList
           mapped={result.mapping.mapped}
