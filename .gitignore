@@ -45,6 +45,5 @@ yarn-error.log*
 next-env.d.ts
 
 # deck build tooling (scripts, raw screenshots, icons) - only the
-# finished .pptx ships in the repo
+# finished .pptx and .pdf ship in the repo
 /deck-assets/
-Answer-Sheet-Mapper-Demo.pdf
