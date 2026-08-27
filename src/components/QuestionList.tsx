@@ -82,7 +82,9 @@ export function QuestionList({ mapped, orphanAnswers, grading, selection, onSele
                 {answers.map((a) => (
                   <p key={a.id} className="text-sm text-neutral-700 dark:text-neutral-300 italic">
                     &ldquo;{a.text}&rdquo;
-                    {answers.length > 1 && <span className="not-italic text-neutral-400"> — page {a.pageIndex + 1}</span>}
+                    {status === "answered_multi_page" && (
+                      <span className="not-italic text-neutral-400"> — page {a.pageIndex + 1}</span>
+                    )}
                   </p>
                 ))}
                 {gradeResult && (

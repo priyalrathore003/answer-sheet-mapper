@@ -43,3 +43,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# deck build tooling (scripts, raw screenshots, icons) - only the
+# finished .pptx ships in the repo
+/deck-assets/
+Answer-Sheet-Mapper-Demo.pdf
