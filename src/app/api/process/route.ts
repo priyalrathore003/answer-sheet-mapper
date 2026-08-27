@@ -7,7 +7,10 @@ import type { AnswerRegion, ProcessEvent, ProcessResult, Question } from "@/lib/
 
 // Needs Node APIs (mupdf, sharp, the Gemini SDK) — not compatible with the edge runtime.
 export const runtime = "nodejs";
-export const maxDuration = 120;
+// Vercel's Hobby plan hard-caps serverless functions at 60s regardless of
+// this value; pages are extracted in parallel (not sequentially) precisely
+// so a multi-page document has a real chance of finishing inside that.
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const formData = await req.formData();
@@ -33,42 +36,60 @@ export async function POST(req: Request) {
           filesToPngPages(answerFiles),
         ]);
 
-        const questions: Question[] = [];
-        for (let i = 0; i < questionPages.length; i++) {
-          send({
-            type: "progress",
-            step: "extracting_questions",
-            message: `Extracting questions (page ${i + 1}/${questionPages.length})…`,
-          });
-          const raw = await extractQuestionsForPage(questionPages[i], "image/png", i + 1);
-          raw.forEach((rq, idx) => {
-            questions.push({
+        // Pages within each document are extracted in parallel — these are
+        // independent Gemini calls, and running them one-at-a-time was the
+        // direct cause of a real multi-page document exceeding Vercel's
+        // serverless time limit and hanging the client forever mid-stream.
+        send({
+          type: "progress",
+          step: "extracting_questions",
+          message: `Extracting questions from ${questionPages.length} page${questionPages.length > 1 ? "s" : ""}…`,
+        });
+        let questionsDone = 0;
+        const questionResults = await Promise.all(
+          questionPages.map(async (page, i) => {
+            const raw = await extractQuestionsForPage(page, "image/png", i + 1);
+            questionsDone++;
+            send({
+              type: "progress",
+              step: "extracting_questions",
+              message: `Extracted questions — page ${i + 1} done (${questionsDone}/${questionPages.length})`,
+            });
+            return raw.map((rq, idx) => ({
               id: `${normalizeLabel(rq.label) || "q"}-${i}-${idx}`,
               label: rq.label,
               text: rq.text,
               pageIndex: i,
-            });
-          });
-        }
+            }));
+          })
+        );
+        const questions: Question[] = questionResults.flat();
 
-        const answers: AnswerRegion[] = [];
-        for (let i = 0; i < answerPages.length; i++) {
-          send({
-            type: "progress",
-            step: "extracting_answers",
-            message: `Extracting answers (page ${i + 1}/${answerPages.length})…`,
-          });
-          const raw = await extractAnswerBoxesForPage(answerPages[i], "image/png", i + 1);
-          raw.forEach((ra, idx) => {
-            answers.push({
+        send({
+          type: "progress",
+          step: "extracting_answers",
+          message: `Extracting answers from ${answerPages.length} page${answerPages.length > 1 ? "s" : ""}…`,
+        });
+        let answersDone = 0;
+        const answerResults = await Promise.all(
+          answerPages.map(async (page, i) => {
+            const raw = await extractAnswerBoxesForPage(page, "image/png", i + 1);
+            answersDone++;
+            send({
+              type: "progress",
+              step: "extracting_answers",
+              message: `Extracted answers — page ${i + 1} done (${answersDone}/${answerPages.length})`,
+            });
+            return raw.map((ra, idx) => ({
               id: `a-${i}-${idx}`,
               questionLabel: ra.question_label,
               text: ra.answer_text,
               pageIndex: i,
               box: ra.box_2d,
-            });
-          });
-        }
+            }));
+          })
+        );
+        const answers: AnswerRegion[] = answerResults.flat();
 
         send({ type: "progress", step: "mapping", message: "Mapping answers to questions…" });
         const mapping = mapAnswersToQuestions(questions, answers);
