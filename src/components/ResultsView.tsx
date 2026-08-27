@@ -38,8 +38,8 @@ export function ResultsView({ result, onReset }: Props) {
   return (
     <div className="flex flex-col gap-4 w-full max-w-6xl">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium">Results</h2>
-        <button onClick={onReset} className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white">
+        <h2 className="text-xl font-semibold tracking-tight">Results</h2>
+        <button onClick={onReset} className="text-sm font-medium text-accent hover:opacity-80">
           Start over
         </button>
       </div>

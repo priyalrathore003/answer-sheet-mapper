@@ -7,6 +7,34 @@ interface Props {
   disabled: boolean;
 }
 
+function UploadIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5M4 14v1.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5V14"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function FileIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path
+        d="M4 2.5h6l3.5 3.5v9a1 1 0 0 1-1 1h-8.5a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path d="M10 2.5V6h3.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function FilePicker({
   label,
   hint,
@@ -18,10 +46,28 @@ function FilePicker({
   files: File[];
   onChange: (files: File[]) => void;
 }) {
+  const filled = files.length > 0;
   return (
-    <label className="flex flex-col gap-2 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 p-5 cursor-pointer hover:border-neutral-500 transition-colors">
-      <span className="font-medium">{label}</span>
-      <span className="text-sm text-neutral-500">{hint}</span>
+    <label
+      className={
+        "group relative flex flex-col gap-3 rounded-2xl border p-6 cursor-pointer transition-all " +
+        (filled
+          ? "border-accent/40 bg-accent-soft"
+          : "border-dashed border-neutral-900/12 dark:border-white/12 bg-white dark:bg-neutral-950 hover:border-accent/50 hover:bg-accent-soft/60")
+      }
+    >
+      <div
+        className={
+          "h-10 w-10 rounded-full flex items-center justify-center transition-colors " +
+          (filled ? "bg-accent text-white" : "bg-neutral-900/[.04] dark:bg-white/10 text-neutral-500 group-hover:bg-accent group-hover:text-white")
+        }
+      >
+        <UploadIcon />
+      </div>
+      <div>
+        <div className="font-medium">{label}</div>
+        <div className="text-sm text-neutral-500 dark:text-neutral-400">{hint}</div>
+      </div>
       <input
         type="file"
         accept="application/pdf,image/*"
@@ -29,15 +75,16 @@ function FilePicker({
         className="hidden"
         onChange={(e) => onChange(Array.from(e.target.files ?? []))}
       />
-      <span className="text-sm mt-1">
-        {files.length === 0 ? (
-          <span className="text-neutral-400">No file selected</span>
-        ) : (
-          <span className="text-blue-600 dark:text-blue-400">
-            {files.map((f) => f.name).join(", ")}
-          </span>
-        )}
-      </span>
+      {filled && (
+        <ul className="flex flex-col gap-1.5 mt-1">
+          {files.map((f) => (
+            <li key={f.name} className="flex items-center gap-1.5 text-sm text-neutral-700 dark:text-neutral-300 truncate">
+              <FileIcon />
+              <span className="truncate">{f.name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </label>
   );
 }
@@ -55,28 +102,27 @@ export function UploadForm({ onSubmit, disabled }: Props) {
         e.preventDefault();
         if (canSubmit) onSubmit(questionFiles, answerFiles, grade);
       }}
-      className="flex flex-col gap-5 w-full max-w-xl"
+      className="flex flex-col gap-5 w-full max-w-2xl"
     >
-      <FilePicker
-        label="Question paper"
-        hint="PDF or one/more images"
-        files={questionFiles}
-        onChange={setQuestionFiles}
-      />
-      <FilePicker
-        label="Student's answer sheet"
-        hint="PDF or one/more images"
-        files={answerFiles}
-        onChange={setAnswerFiles}
-      />
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={grade} onChange={(e) => setGrade(e.target.checked)} />
-        Grade the answers (correct/incorrect + short feedback)
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <FilePicker label="Question paper" hint="PDF or one/more images" files={questionFiles} onChange={setQuestionFiles} />
+        <FilePicker label="Answer sheet" hint="PDF or one/more images" files={answerFiles} onChange={setAnswerFiles} />
+      </div>
+
+      <label className="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-300 select-none">
+        <input
+          type="checkbox"
+          checked={grade}
+          onChange={(e) => setGrade(e.target.checked)}
+          className="h-4 w-4 rounded accent-accent"
+        />
+        Grade the answers (score, correct/incorrect, AI feedback)
       </label>
+
       <button
         type="submit"
         disabled={!canSubmit}
-        className="rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium py-3 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="rounded-xl bg-accent text-white font-medium py-3.5 transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
       >
         {disabled ? "Processing…" : "Process answer sheet"}
       </button>
