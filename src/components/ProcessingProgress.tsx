@@ -5,33 +5,22 @@ interface Props {
 }
 
 export function ProcessingProgress({ log }: Props) {
+  const current = log[log.length - 1] ?? "Extracting…";
+
   return (
-    <div className="w-full max-w-lg flex flex-col items-center gap-8 py-6">
-      <div className="relative h-16 w-16 flex items-center justify-center">
+    <div className="w-full max-w-lg flex flex-col items-center gap-3 py-16">
+      <div className="relative h-16 w-16 flex items-center justify-center mb-3">
         <div className="absolute inset-0 rounded-full border-2 border-accent/20" />
         <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent animate-spin" />
-        <span className="text-accent text-xl">✦</span>
+        <span className="text-accent text-2xl">✦</span>
       </div>
 
-      <div className="w-full flex flex-col gap-2.5">
-        {log.map((message, i) => {
-          const isLast = i === log.length - 1;
-          return (
-            <div key={i} className="flex items-center gap-3 text-sm">
-              <span
-                className={
-                  isLast
-                    ? "h-1.5 w-1.5 rounded-full bg-accent animate-pulse shrink-0"
-                    : "h-1.5 w-1.5 rounded-full bg-green-500 shrink-0"
-                }
-              />
-              <span className={isLast ? "text-neutral-900 dark:text-neutral-100 font-medium" : "text-neutral-400"}>
-                {message}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      <h2 className="text-xl font-semibold">Extracting…</h2>
+      <p className="text-neutral-500 dark:text-neutral-400 text-sm">This may take a while</p>
+
+      <p key={current} className="text-xs text-neutral-400 mt-4 tabular-nums">
+        {current}
+      </p>
     </div>
   );
 }

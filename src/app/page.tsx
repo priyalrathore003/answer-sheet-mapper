@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AppShell } from "@/components/AppShell";
 import { UploadForm } from "@/components/UploadForm";
 import { ProcessingProgress } from "@/components/ProcessingProgress";
 import { ResultsView } from "@/components/ResultsView";
@@ -42,24 +43,15 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-screen font-sans">
-      <header className="flex items-center gap-2.5 px-6 sm:px-10 py-5 border-b border-neutral-900/[.06] dark:border-white/[.08]">
-        <div className="h-7 w-7 rounded-md bg-accent text-white flex items-center justify-center text-sm font-bold shrink-0">
-          A
-        </div>
-        <span className="font-semibold tracking-tight">Answer Sheet Mapper</span>
-      </header>
-
-      <main className="flex flex-1 flex-col items-center px-6 py-14 sm:py-20">
+    <AppShell breadcrumb="Exams">
+      <div className="flex flex-1 flex-col items-center px-6 py-14 sm:py-20">
         <div className="w-full max-w-6xl flex flex-col items-center gap-10">
           {state.kind === "upload" && (
             <div className="text-center max-w-lg">
               <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
-                Upload <span className="text-accent">question paper &amp; answer sheet</span>
+                Upload <span className="text-accent">Question Paper &amp; Answer Sheets</span>
               </h1>
-              <p className="text-neutral-500 dark:text-neutral-400 mt-3">
-                Extract questions, map handwritten answers, and highlight exactly where each one was written.
-              </p>
+              <p className="text-neutral-500 dark:text-neutral-400 mt-3">Upload both files to get started</p>
             </div>
           )}
 
@@ -83,7 +75,7 @@ export default function Home() {
             <ResultsView result={state.result} onReset={() => setState({ kind: "upload" })} />
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

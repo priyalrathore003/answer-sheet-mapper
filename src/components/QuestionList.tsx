@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { AnswerRegion, GradingResult, MappedQuestion } from "@/lib/types";
 
 export type Selection = { kind: "question"; id: string } | { kind: "orphan"; id: string } | null;
@@ -44,13 +45,41 @@ function MultiPageTag() {
 
 export function QuestionList({ mapped, orphanAnswers, grading, selection, onSelect }: Props) {
   const gradingById = new Map(grading.map((g) => [g.questionId, g]));
+  const [expandAll, setExpandAll] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  function toggleExpandAll() {
+    setExpandAll((prev) => !prev);
+    setExpandedIds(new Set());
+  }
 
   return (
     <div className="flex flex-col gap-1 w-full">
+      <div className="flex items-center justify-between px-1 pb-2">
+        <h3 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+          Extracted Questions <span className="text-neutral-400 dark:text-neutral-500">(from question paper)</span>
+        </h3>
+        <button onClick={toggleExpandAll} className="text-sm font-medium text-accent hover:opacity-80 shrink-0">
+          {expandAll ? "Collapse All" : "Expand All"}
+        </button>
+      </div>
+
       {mapped.map(({ question, status, answers }) => {
         const isSelected = selection?.kind === "question" && selection.id === question.id;
         const clickable = status !== "unanswered";
         const gradeResult = gradingById.get(question.id);
+        const isExpanded = clickable && (expandAll || expandedIds.has(question.id) || isSelected);
+
+        function toggle() {
+          if (!clickable) return;
+          onSelect(isSelected ? null : { kind: "question", id: question.id });
+          setExpandedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(question.id)) next.delete(question.id);
+            else next.add(question.id);
+            return next;
+          });
+        }
 
         return (
           <div
@@ -62,7 +91,7 @@ export function QuestionList({ mapped, orphanAnswers, grading, selection, onSele
           >
             <button
               disabled={!clickable}
-              onClick={() => onSelect(clickable ? (isSelected ? null : { kind: "question", id: question.id }) : null)}
+              onClick={toggle}
               className={
                 "text-left w-full px-3 py-2.5 rounded-lg transition-colors " +
                 (!isSelected && clickable ? "hover:bg-neutral-50 dark:hover:bg-neutral-900" : "") +
@@ -77,7 +106,7 @@ export function QuestionList({ mapped, orphanAnswers, grading, selection, onSele
               </div>
             </button>
 
-            {isSelected && (
+            {isExpanded && (
               <div className="px-3 pb-3 pl-9 flex flex-col gap-2">
                 {answers.map((a) => (
                   <p key={a.id} className="text-sm text-neutral-700 dark:text-neutral-300 italic">

@@ -35,14 +35,27 @@ function FileIcon() {
   );
 }
 
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function formatSize(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1 ? `${mb.toFixed(mb < 10 ? 1 : 0)}MB` : `${Math.max(1, Math.round(bytes / 1024))}KB`;
+}
+
+const MAX_BYTES = 10 * 1024 * 1024;
+
 function FilePicker({
   label,
-  hint,
   files,
   onChange,
 }: {
   label: string;
-  hint: string;
   files: File[];
   onChange: (files: File[]) => void;
 }) {
@@ -65,8 +78,10 @@ function FilePicker({
         <UploadIcon />
       </div>
       <div>
-        <div className="font-medium">{label}</div>
-        <div className="text-sm text-neutral-500 dark:text-neutral-400">{hint}</div>
+        <div className="font-medium">
+          Upload <span className="text-accent">{label}</span>
+        </div>
+        <div className="text-sm text-neutral-500 dark:text-neutral-400">Max 10MB</div>
       </div>
       <input
         type="file"
@@ -77,10 +92,25 @@ function FilePicker({
       />
       {filled && (
         <ul className="flex flex-col gap-1.5 mt-1">
-          {files.map((f) => (
-            <li key={f.name} className="flex items-center gap-1.5 text-sm text-neutral-700 dark:text-neutral-300 truncate">
+          {files.map((f, i) => (
+            <li
+              key={f.name}
+              className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-900 border border-neutral-900/[.06] dark:border-white/10 rounded-lg px-2.5 py-1.5"
+            >
               <FileIcon />
-              <span className="truncate">{f.name}</span>
+              <span className="truncate flex-1">{f.name}</span>
+              <span className="text-xs text-neutral-400 shrink-0">{formatSize(f.size)}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onChange(files.filter((_, idx) => idx !== i));
+                }}
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 shrink-0"
+                aria-label={`Remove ${f.name}`}
+              >
+                <CloseIcon />
+              </button>
             </li>
           ))}
         </ul>
@@ -94,7 +124,8 @@ export function UploadForm({ onSubmit, disabled }: Props) {
   const [answerFiles, setAnswerFiles] = useState<File[]>([]);
   const [grade, setGrade] = useState(true);
 
-  const canSubmit = questionFiles.length > 0 && answerFiles.length > 0 && !disabled;
+  const oversized = [...questionFiles, ...answerFiles].some((f) => f.size > MAX_BYTES);
+  const canSubmit = questionFiles.length > 0 && answerFiles.length > 0 && !disabled && !oversized;
 
   return (
     <form
@@ -105,11 +136,13 @@ export function UploadForm({ onSubmit, disabled }: Props) {
       className="flex flex-col gap-5 w-full max-w-2xl"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FilePicker label="Question paper" hint="PDF or one/more images" files={questionFiles} onChange={setQuestionFiles} />
-        <FilePicker label="Answer sheet" hint="PDF or one/more images" files={answerFiles} onChange={setAnswerFiles} />
+        <FilePicker label="Question Paper" files={questionFiles} onChange={setQuestionFiles} />
+        <FilePicker label="Answer Sheet" files={answerFiles} onChange={setAnswerFiles} />
       </div>
 
-      <label className="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-300 select-none">
+      {oversized && <p className="text-sm text-red-600 dark:text-red-400 text-center -mt-1">One of the files is over 10MB — remove or replace it to continue.</p>}
+
+      <label className="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-300 select-none justify-center">
         <input
           type="checkbox"
           checked={grade}
@@ -122,10 +155,15 @@ export function UploadForm({ onSubmit, disabled }: Props) {
       <button
         type="submit"
         disabled={!canSubmit}
-        className="rounded-xl bg-accent text-white font-medium py-3.5 transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium py-3.5 transition-opacity hover:opacity-90 disabled:bg-neutral-900/20 disabled:dark:bg-white/20 disabled:text-neutral-500 disabled:dark:text-neutral-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        {disabled ? "Processing…" : "Process answer sheet"}
+        {disabled ? "Processing…" : "Start Mapping"}
+        {canSubmit && <span aria-hidden="true">→</span>}
       </button>
+
+      <p className="text-xs text-center text-neutral-400">
+        Once both files are uploaded, you&apos;ll be able to map answers with questions
+      </p>
     </form>
   );
 }

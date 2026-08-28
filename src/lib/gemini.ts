@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, type SchemaUnion } from "@google/genai";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -31,7 +31,7 @@ interface GenerateParams {
   promptVersion: string;
   systemInstruction: string;
   prompt: string;
-  responseSchema: unknown;
+  responseSchema: SchemaUnion;
   imageBytes?: Buffer;
   imageMimeType?: string;
 }
@@ -68,7 +68,7 @@ async function writeCache(key: string, text: string): Promise<void> {
   await writeFile(path.join(CACHE_DIR, `${key}.json`), text, "utf-8");
 }
 
-async function callModel(model: string, systemInstruction: string, prompt_: string, parts: Part[], responseSchema: unknown): Promise<string> {
+async function callModel(model: string, systemInstruction: string, prompt_: string, parts: Part[], responseSchema: SchemaUnion): Promise<string> {
   const client = getGeminiClient();
   const response = await client.models.generateContent({
     model,
@@ -76,7 +76,7 @@ async function callModel(model: string, systemInstruction: string, prompt_: stri
     config: {
       systemInstruction,
       responseMimeType: "application/json",
-      responseSchema: responseSchema as any,
+      responseSchema,
       temperature: 0,
     },
   });
