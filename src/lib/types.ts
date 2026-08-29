@@ -46,6 +46,10 @@ export interface ProcessResult {
   answerPages: AnswerPageImage[];
   mapping: MappingResult;
   grading: GradingResult[];
+  /** Set when grading was requested but skipped to protect the rest of the
+   * result from a serverless time-limit failure — extraction and mapping
+   * still succeeded, grading just didn't have a safe window left to run in. */
+  gradingSkippedReason?: string;
 }
 
 export type ProcessEvent =

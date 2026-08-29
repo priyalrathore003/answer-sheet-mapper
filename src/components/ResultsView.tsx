@@ -48,6 +48,11 @@ export function ResultsView({ result, onReset }: Props) {
           Start over
         </button>
       </div>
+      {result.gradingSkippedReason && (
+        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
+          Grading was skipped. {result.gradingSkippedReason}
+        </p>
+      )}
       <GradingSummary mapped={result.mapping.mapped} grading={result.grading} />
 
       <div className="lg:hidden flex rounded-lg bg-neutral-100 dark:bg-neutral-900 p-1">

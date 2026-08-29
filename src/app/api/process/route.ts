@@ -25,6 +25,15 @@ export async function POST(req: Request) {
   }
 
   const encoder = new TextEncoder();
+  const startedAt = Date.now();
+  // Vercel Hobby kills this function at ~60s no matter what. Grading runs
+  // last, after extraction (already parallelized) and mapping, so it's the
+  // step most likely to be the one that pushes a real multi-page document
+  // over that edge — and losing the *whole* result (extraction + mapping
+  // included) to a grading call that didn't fit is a bad trade when grading
+  // is explicitly optional. GRADING_BUDGET_MS is when to stop trying.
+  const GRADING_BUDGET_MS = 42_000;
+
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: ProcessEvent) => controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
@@ -95,17 +104,25 @@ export async function POST(req: Request) {
         const mapping = mapAnswersToQuestions(questions, answers);
 
         let grading: ProcessResult["grading"] = [];
+        let gradingSkippedReason: string | undefined;
         if (gradeEnabled) {
-          send({ type: "progress", step: "grading", message: "Grading answers…" });
-          const gradableItems = mapping.mapped
-            .filter((m) => m.status !== "unanswered")
-            .map((m) => ({
-              id: m.question.id,
-              questionLabel: m.question.label,
-              questionText: m.question.text,
-              answerText: m.answers.map((a) => a.text).join(" "),
-            }));
-          grading = await gradeAnswers(gradableItems);
+          const elapsed = Date.now() - startedAt;
+          if (elapsed > GRADING_BUDGET_MS) {
+            gradingSkippedReason =
+              "Skipped to keep the rest of the result from failing — this document's extraction alone used most of the available processing time.";
+            send({ type: "progress", step: "grading", message: "Skipping grading — running low on processing time…" });
+          } else {
+            send({ type: "progress", step: "grading", message: "Grading answers…" });
+            const gradableItems = mapping.mapped
+              .filter((m) => m.status !== "unanswered")
+              .map((m) => ({
+                id: m.question.id,
+                questionLabel: m.question.label,
+                questionText: m.question.text,
+                answerText: m.answers.map((a) => a.text).join(" "),
+              }));
+            grading = await gradeAnswers(gradableItems);
+          }
         }
 
         const answerPageImages = answerPages.map((buf, i) => ({
@@ -113,7 +130,7 @@ export async function POST(req: Request) {
           imageDataUrl: pngToDataUrl(buf),
         }));
 
-        const result: ProcessResult = { questions, answerPages: answerPageImages, mapping, grading };
+        const result: ProcessResult = { questions, answerPages: answerPageImages, mapping, grading, gradingSkippedReason };
         send({ type: "done", result });
       } catch (err) {
         send({ type: "error", message: err instanceof Error ? err.message : String(err) });
