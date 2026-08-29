@@ -63,10 +63,10 @@ function FilePicker({
   return (
     <label
       className={
-        "group relative flex flex-col gap-3 rounded-2xl border p-6 cursor-pointer transition-all " +
+        "group relative flex flex-col gap-3 rounded-2xl border p-6 cursor-pointer transition-all card-elevated " +
         (filled
           ? "border-accent/40 bg-accent-soft"
-          : "border-dashed border-neutral-900/12 dark:border-white/12 bg-white dark:bg-neutral-950 hover:border-accent/50 hover:bg-accent-soft/60")
+          : "border-dashed border-neutral-900/12 bg-white hover:border-accent/50 hover:bg-accent-soft/60")
       }
     >
       <div

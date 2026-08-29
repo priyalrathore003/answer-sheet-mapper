@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { TeacherIllustration } from "@/components/icons";
 import { UploadForm } from "@/components/UploadForm";
 import { ProcessingProgress } from "@/components/ProcessingProgress";
 import { ResultsView } from "@/components/ResultsView";
@@ -55,6 +56,7 @@ export default function Home() {
             </div>
           )}
 
+          {state.kind === "upload" && <TeacherIllustration className="w-20 h-20" />}
           {state.kind === "upload" && <UploadForm onSubmit={handleSubmit} disabled={false} />}
 
           {state.kind === "processing" && <ProcessingProgress log={state.log} />}

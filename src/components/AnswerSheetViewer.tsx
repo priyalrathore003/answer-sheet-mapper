@@ -23,7 +23,7 @@ export function AnswerSheetViewer({ pages, currentPageIndex, onPageChange, highl
   const canGoNext = currentPageIndex < pages.length - 1;
 
   return (
-    <div className="flex flex-col w-full border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
+    <div className="flex flex-col w-full border border-neutral-200 rounded-lg overflow-hidden card-elevated bg-white">
       <div className="flex items-center justify-between flex-wrap gap-x-3 gap-y-1.5 px-3 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
         <span className="text-sm font-medium shrink-0">Answer Sheet</span>
         <div className="flex items-center gap-3 shrink-0">
