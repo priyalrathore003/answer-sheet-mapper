@@ -46,3 +46,55 @@ body {
     0 16px 48px -8px rgba(0, 0, 0, 0.10),
     0 32px 48px -16px rgba(0, 0, 0, 0.06);
 }
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes popin {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes viewfade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-viewfade {
+  animation: viewfade 0.25s ease-out;
+}
+
+.animate-popin {
+  animation: popin 0.12s ease-out;
+}
+
+/* A visible, on-brand focus ring for keyboard navigation — every
+   interactive element in the app inherits this instead of the
+   browser default, matching the accent color used everywhere else. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

@@ -46,7 +46,7 @@ export default function Home() {
   return (
     <AppShell breadcrumb="Exams">
       <div className="flex flex-1 flex-col items-center px-6 py-14 sm:py-20">
-        <div className="w-full max-w-6xl flex flex-col items-center gap-10">
+        <div key={state.kind} className="w-full max-w-6xl flex flex-col items-center gap-10 animate-viewfade">
           {state.kind === "upload" && (
             <div className="text-center max-w-lg">
               <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
